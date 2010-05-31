@@ -1,0 +1,71 @@
+The Plan for Culet
+
+I like to write down plans to solidify my thoughts, so these are my thoughts about Culet.
+
+IDEA
+
+The idea is behind culet is to satisfy my ongoing desire for a blogging app
+that is juuust right for me. In this case, that largely centers on the idea of
+faceted blogging and faceted identies, and some related thoughts I've come up
+with on the concepts.
+
+In this context, that means a few things:
+
+- One user might want to present multiple profiles, and control how and if
+  people can see that these are connected.
+
+- One user, with one or more profiles, may want to have multiple blogs they
+  post to under different subjects, with different styles, layouts, archives,
+  and possibly under different identies.
+
+- The lines between these should be strict by default, and blurry on demand.
+
+
+THE PLAN
+
+The "culet_profile" Application
+
+    Provides a profile model, forms, and views to allow users to manage
+multiple profiles. Each profile can be associated with a single or multiple
+sites and each profile includes lots of optional fields the user can enter.
+
+The profiles can also be connected, optionally. Connections are made one
+way.
+
+The "culet_blog" Application
+
+    This blogging application is two-fold in intent. Every entry
+
+1) is associated with a culet profile, so users can be posting via
+   multiple identities, and,
+
+2) has no content, but a generic reference to an object it is publishing.
+
+The intent of this is that a blog can be comprissed of many content types,
+and many different ways of authoring content. One post could be a simple
+text post, another a link, and a third a video. Rather than one complicated
+format, this structures everything so that different types can be
+provided by isolated applications.
+
+Also, this means any new editing forms can be tested on their own, which
+is an implement to the development process.
+
+The publication of the object feed is also separated out. Publisher objects,
+registered by the applications that provide content types or by others, can
+consume the entries and generate posts. Here are some examples:
+
+A) A simple text entry is made, and a simple text post is rendered by a
+   publisher into the feeds.
+B) You bookmark several links with a bookmarking app throughout the day, and
+   at midnight a link-post publisher consumes all the links into a daily
+   link post.
+C) A consolidating publisher consumes the text entry and then appends all new
+   links below it, in a single post.
+
+:: culet_blog should be split into:
+
+- culet_stream: streams of generic objects associated with culet profiles
+- culet_publish: Foundation for publisher objects and tracking which objects
+  from the stream have been consumed by which publishers
+- culet_feed: collections one or more publisher objects and produces a feed to
+  RSS, web, email, or other.

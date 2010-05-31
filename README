@@ -1,0 +1,8 @@
+Django Culet
+
+Collection of simple Django applications that provide faceted services
+
+- Multiple profiles per user
+- A blog app that allows multiple content types
+- Support facilites for hookable/plugable applications
+
