@@ -10,6 +10,8 @@ class SuspicionError(Exception):
         self.msg = msg
         self.user = user
         self.args = (msg, user)
+class SuspicionError_Permission(SuspicionError): pass
+class SuspicionError_Invalid(SuspicionError): pass
 
 def _viewier_dec(f, template):
     def _(request, *args, **kwargs):
@@ -21,6 +23,7 @@ def _viewier_dec(f, template):
             )
         except SuspicionError:
             return render_to_response("culet/error.html", RequestContext(request, {}))
+    _.wrapped = f
     return _
 def viewier(template):
     return lambda func:_viewier_dec(func, template)
@@ -42,9 +45,9 @@ def become(request, alternate):
         personality = master_user.personalities.filter(username=alternate)
     except User.DoesNotExist:
         if User.objects.filter(username=alternate).count():
-            raise SuspicionError("User tried to become a personality they do not own", user=current_user)
+            raise SuspicionError_Permission("User tried to become a personality they do not own", user=current_user)
         else:
-            raise SuspicionError("User tried to become a personality that does not exist", user=current_user)
+            raise SuspicionError_Invalid("User tried to become a personality that does not exist", user=current_user)
 
     else:
         login(request, personality)

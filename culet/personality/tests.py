@@ -4,7 +4,7 @@ import mock
 from django.contrib.auth.models import User
 
 from culet.personality.models import Personality
-from culet.personality.views import _viewier_dec, viewier, SuspicionError
+from culet.personality.views import _viewier_dec, viewier, become, SuspicionError, SuspicionError_Permission, SuspicionError_Invalid
 
 
 class PersonalityTest(unittest.TestCase):
@@ -69,3 +69,72 @@ class ViewierTest(unittest.TestCase):
 
             assert render_to_response.called_with("the_template.html")
             assert render_to_response.call_args[0][1]['x'] == 123
+
+
+class MockSession(mock.Mock):
+    def __contains__(self, key):
+        return hasattr(self, key)
+    def __getitem__(self, key):
+        return getattr(self, key)
+    def __setitem__(self, key, value):
+        return setattr(self, key, value)
+
+class BecomeTest(unittest.TestCase):
+
+    def test_refuseNonexistantUser(self):
+        request = mock.Mock()
+        def raise_user_doesnotexist(*args, **kwargs):
+            assert kwargs['username'] == 'alt1'
+            raise User.DoesNotExist()
+
+        request.session = MockSession()
+        request.session.SESSION_KEY = 'THE_KEY'
+        request.user = mock.Mock(spec=['personalities'])
+
+        personality_filter = request.user.personalities.filter
+        personality_filter.side_effect = raise_user_doesnotexist
+        self.assertRaises(SuspicionError_Invalid, become.wrapped, request, "alt1")
+
+    def test_refuseUnpermittedUser(self):
+        request = mock.Mock()
+        def raise_user_doesnotexist(*args, **kwargs):
+            assert kwargs['username'] == 'alt1'
+            raise User.DoesNotExist()
+        
+        request.session = MockSession()
+        request.session.SESSION_key = 'THE_KEY'
+        request.user = mock.Mock(spec=['personalities'])
+
+        personality_filter = request.user.personalities.filter
+        personality_filter.side_effect = raise_user_doesnotexist
+        @apply
+        @mock.patch("django.contrib.auth.models.User.objects.filter")
+        def _(user_filter):
+            user_filter.return_value = mock.Mock()
+            user_filter.return_value.count = mock.Mock(return_value=1)
+
+            self.assertRaises(SuspicionError_Permission, become.wrapped, request, "alt1")
+
+    def test_acceptOwned(self):
+        request = mock.Mock()
+        alt_user = mock.Mock()
+        
+        request.session = MockSession()
+        request.session.SESSION_key = 'THE_KEY'
+        request.user = mock.Mock(spec=['personalities'])
+        original_user = request.user
+
+        personality_filter = request.user.personalities.filter
+        personality_filter.return_value = alt_user
+
+        @apply
+        @mock.patch("culet.personality.views.login")
+        def _(login):
+            return_value = become.wrapped(request, "alt1")
+            assert return_value['previous_user'] is original_user
+            assert return_value['became'] is alt_user
+            assert return_value['master_user'] is original_user
+            assert login.call_args[0][0] is request
+            assert login.call_args[0][1] is alt_user
+
+
