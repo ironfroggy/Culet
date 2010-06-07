@@ -1,5 +1,7 @@
 from django.contrib.auth import login
 from django.contrib.auth.models import User
+from django.template import RequestContext
+from django.shortcuts import render_to_response
 
 from culet.personality.models import Personality
 
@@ -18,7 +20,7 @@ def _viewier_dec(f, template):
                 RequestContext(request, data)
             )
         except SuspicionError:
-            return render_to_response("culet/error.html")
+            return render_to_response("culet/error.html", RequestContext(request, {}))
     return _
 def viewier(template):
     return lambda func:_viewier_dec(func, template)
