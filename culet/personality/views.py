@@ -42,7 +42,7 @@ def become(request, alternate):
         master_user = current_user
 
     try:
-        personality = master_user.personalities.filter(username=alternate)
+        personality = master_user.personalities.get(username=alternate)
     except User.DoesNotExist:
         if User.objects.filter(username=alternate).count():
             raise SuspicionError_Permission("User tried to become a personality they do not own", user=current_user)

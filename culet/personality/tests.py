@@ -91,8 +91,8 @@ class BecomeTest(unittest.TestCase):
         request.session.SESSION_KEY = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
 
-        personality_filter = request.user.personalities.filter
-        personality_filter.side_effect = raise_user_doesnotexist
+        personality_get = request.user.personalities.get
+        personality_get.side_effect = raise_user_doesnotexist
         self.assertRaises(SuspicionError_Invalid, become.wrapped, request, "alt1")
 
     def test_refuseUnpermittedUser(self):
@@ -102,14 +102,15 @@ class BecomeTest(unittest.TestCase):
             raise User.DoesNotExist()
         
         request.session = MockSession()
-        request.session.SESSION_key = 'THE_KEY'
+        request.session.SESSION_KEY = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
 
-        personality_filter = request.user.personalities.filter
-        personality_filter.side_effect = raise_user_doesnotexist
+        personality_get = request.user.personalities.get
+        personality_get.side_effect = raise_user_doesnotexist
         @apply
+        @mock.patch("django.contrib.auth.models.User.objects.get")
         @mock.patch("django.contrib.auth.models.User.objects.filter")
-        def _(user_filter):
+        def _(user_filter, user_get):
             user_filter.return_value = mock.Mock()
             user_filter.return_value.count = mock.Mock(return_value=1)
 
@@ -124,17 +125,41 @@ class BecomeTest(unittest.TestCase):
         request.user = mock.Mock(spec=['personalities'])
         original_user = request.user
 
-        personality_filter = request.user.personalities.filter
-        personality_filter.return_value = alt_user
+        personality_get = request.user.personalities.get
+        personality_get.return_value = alt_user
 
+        self._accept_test(request, original_user, original_user, alt_user, personality_get)
+
+    def test_acceptSibling(self):
+        request = mock.Mock()
+        alt_user = mock.Mock()
+        
+        request.session = MockSession()
+        request.session.SESSION_key = 'THE_KEY'
+        request.user = mock.Mock(spec=['personalities'])
+        original_user = request.user
+        original_user.master_user = mock.Mock()
+        master_user = original_user.master_user
+
+        personality_get = master_user.personalities.get
+        personality_get.return_value = alt_user
+
+        self._accept_test(request, original_user, master_user, alt_user, personality_get)
+
+    def _accept_test(self, request, original_user, master_user, alt_user, personality_get):
         @apply
         @mock.patch("culet.personality.views.login")
         def _(login):
             return_value = become.wrapped(request, "alt1")
-            assert return_value['previous_user'] is original_user
-            assert return_value['became'] is alt_user
-            assert return_value['master_user'] is original_user
+            R_previous_user = return_value['previous_user']
+            R_became = return_value['became']
+            R_master_user = return_value['master_user']
+            del return_value
+
+            assert R_previous_user is original_user, locals()
+            assert R_became is alt_user, locals()
+            assert R_master_user is master_user, locals()
             assert login.call_args[0][0] is request
             assert login.call_args[0][1] is alt_user
 
-
+          
