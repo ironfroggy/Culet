@@ -54,3 +54,17 @@ class ViewierTest(unittest.TestCase):
             result = decorated(request)
 
             assert render_to_response.called_with("culet/error.html")
+
+    def test_usesTemplate(self):
+        request = mock.Mock()
+        user = mock.Mock()
+        def view(request):
+            return {}
+
+        @apply
+        @mock.patch("culet.personality.views.render_to_response")
+        def _(render_to_response):
+            decorated = _viewier_dec(view, "the_template.html")
+            result = decorated(request)
+
+            assert render_to_response.called_with("the_template.html")
