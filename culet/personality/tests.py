@@ -59,7 +59,7 @@ class ViewierTest(unittest.TestCase):
         request = mock.Mock()
         user = mock.Mock()
         def view(request):
-            return {}
+            return {'x': 123}
 
         @apply
         @mock.patch("culet.personality.views.render_to_response")
@@ -68,3 +68,4 @@ class ViewierTest(unittest.TestCase):
             result = decorated(request)
 
             assert render_to_response.called_with("the_template.html")
+            assert render_to_response.call_args[0][1]['x'] == 123
