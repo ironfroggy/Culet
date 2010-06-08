@@ -20,30 +20,40 @@ class SuspicionError_Invalid(SuspicionError): pass
 def _viewier_dec(f, template, get_form=None, success_url=None):
     def _(request, *args, **kwargs):
         try:
+            ctx = {}
+
+            view_locals = f(request, *args, **kwargs) or {}
+            ctx.update(view_locals.get('ctx', {}))
+            def callback(name, *args, **kwargs):
+                cb_function = view_locals.get(name, lambda *a, **k: a[0])
+                ret = cb_function(*args, **kwargs)
+                return ret
+
+            # Creating a form
             if request.method == 'GET' and get_form is not None:
-                data = {
-                    'form': get_form(request)
-                }
+                ctx['form'] = form = get_form(request)
+            # Handling a form
             elif request.method == 'POST' and get_form is not None:
-                form = get_form(request, request.POST)
+                ctx['form'] = form = get_form(request, request.POST)
                 if form.is_valid():
+                    callback('fmrm_valid', form)
                     form.save()
+                    callback('form_saved', form)
                     if success_url is not None:
                         return HttpResponseRedirect(reverse(success_url))
-                else:
-                    data = {
-                        'form': form,
-                    }
+
+            # Post-view processing and result
+            if view_locals.get('redirect', False):
+                return HttpResponseRedirect(reverse(success_url))
             else:
-                data = f(request, *args, **kwargs)
-                if success_url is not None:
-                    return HttpResponseRedirect(reverse(success_url))
-            return render_to_response(
-                template,
-                RequestContext(request, data)
-            )
+                return render_to_response(
+                    template,
+                    RequestContext(request, ctx)
+                )
         except SuspicionError:
-            return render_to_response("culet/error.html", RequestContext(request, {}))
+            return render_to_response("culet/error.html", RequestContext(request, ctx))
+
+    # TODO: Figure out what the "standard" thing is here
     _.wrapped = f
     return _
 def viewier(template, **kwargs):
@@ -61,11 +71,7 @@ def myselves(request):
 
     personalities = master_user.personalities.all()
 
-    return {
-        'master_user': master_user,
-        'current_user': current_user,
-        'personalities': personalities,
-    }
+    return {'ctx': locals()}
 
 @viewier("culet/become.html", success_url="personality-myselves")
 def become(request, alternate):
@@ -96,10 +102,13 @@ def become(request, alternate):
     personality.backend = settings.AUTHENTICATION_BACKENDS[0]
     login(request, personality)
 
-    return {
-        'previous_user': current_user,
-        'became': personality,
-        'master_user': master_user,
+    return {'ctx':
+        {
+            'previous_user': current_user,
+            'became': personality,
+            'master_user': master_user,
+        },
+        'redirect': True,
     }
 
 def delete(request, alternate, confirmation=None):
