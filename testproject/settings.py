@@ -62,6 +62,8 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+
+    'culet.personality.middleware.PersonalityMiddleware',
 )
 
 ROOT_URLCONF = 'testproject.urls'
