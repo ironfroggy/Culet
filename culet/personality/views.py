@@ -28,8 +28,23 @@ def _viewier_dec(f, template):
 def viewier(template):
     return lambda func:_viewier_dec(func, template)
 
+@viewier('culet/myselves.html')
 def myselves(request):
     """List of current user's personalities."""
+
+    current_user = request.user
+    try:
+        master_user = current_user.master_user
+    except AttributeError:
+        master_user = current_user
+
+    personalities = master_user.personalities.all()
+
+    return {
+        'master_user': master_user,
+        'current_user': current_user,
+        'personalities': personalities,
+    }
 
 @viewier("culet/become.html")
 def become(request, alternate):
