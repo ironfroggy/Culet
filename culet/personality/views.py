@@ -36,6 +36,8 @@ def become(request, alternate):
     """Log a user in as one of their alternates."""
 
     current_user = request.user
+    if current_user.is_anonymous():
+        raise SuspicionError_Permission("User tried to become a personality while not logged in", user=current_user)
     try:
         master_user = current_user.master_user
     except AttributeError:

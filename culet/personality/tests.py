@@ -90,6 +90,7 @@ class BecomeTest(unittest.TestCase):
         request.session = MockSession()
         request.session.SESSION_KEY = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
+        request.user.is_anonymous = mock.Mock(return_value=False)
 
         personality_get = request.user.personalities.get
         personality_get.side_effect = raise_user_doesnotexist
@@ -104,6 +105,29 @@ class BecomeTest(unittest.TestCase):
         request.session = MockSession()
         request.session.SESSION_KEY = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
+        request.user.is_anonymous = mock.Mock(return_value=False)
+
+        personality_get = request.user.personalities.get
+        personality_get.side_effect = raise_user_doesnotexist
+        @apply
+        @mock.patch("django.contrib.auth.models.User.objects.get")
+        @mock.patch("django.contrib.auth.models.User.objects.filter")
+        def _(user_filter, user_get):
+            user_filter.return_value = mock.Mock()
+            user_filter.return_value.count = mock.Mock(return_value=1)
+
+            self.assertRaises(SuspicionError_Permission, become.wrapped, request, "alt1")
+
+    def test_refuseUnpermittedUser(self):
+        request = mock.Mock()
+        def raise_user_doesnotexist(*args, **kwargs):
+            assert kwargs['username'] == 'alt1'
+            raise User.DoesNotExist()
+        
+        request.session = MockSession()
+        request.session.SESSION_KEY = 'THE_KEY'
+        request.user = mock.Mock(spec=['personalities'])
+        request.user.is_anonymous = mock.Mock(return_value=True)
 
         personality_get = request.user.personalities.get
         personality_get.side_effect = raise_user_doesnotexist
@@ -123,6 +147,7 @@ class BecomeTest(unittest.TestCase):
         request.session = MockSession()
         request.session.SESSION_key = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
+        request.user.is_anonymous = mock.Mock(return_value=False)
         original_user = request.user
 
         personality_get = request.user.personalities.get
@@ -137,6 +162,7 @@ class BecomeTest(unittest.TestCase):
         request.session = MockSession()
         request.session.SESSION_key = 'THE_KEY'
         request.user = mock.Mock(spec=['personalities'])
+        request.user.is_anonymous = mock.Mock(return_value=False)
         original_user = request.user
         original_user.master_user = mock.Mock()
         master_user = original_user.master_user
