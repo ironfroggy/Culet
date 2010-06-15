@@ -1,0 +1,2 @@
+south
+django==1.2
