@@ -81,6 +81,10 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    
+    'south',
 
     'culet.personality',
+    'culet.roles',
+    'culet.anycontent',
 )

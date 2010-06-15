@@ -59,7 +59,12 @@ class ViewierTest(unittest.TestCase):
         request = mock.Mock()
         user = mock.Mock()
         def view(request):
-            return {'x': 123}
+            return {
+                'ctx':{
+                    'x': 123,
+                    }
+                }
+            
 
         @apply
         @mock.patch("culet.personality.views.render_to_response")
@@ -177,9 +182,9 @@ class BecomeTest(unittest.TestCase):
         @mock.patch("culet.personality.views.login")
         def _(login):
             return_value = become.wrapped(request, "alt1")
-            R_previous_user = return_value['previous_user']
-            R_became = return_value['became']
-            R_master_user = return_value['master_user']
+            R_previous_user = return_value['ctx']['previous_user']
+            R_became = return_value['ctx']['became']
+            R_master_user = return_value['ctx']['master_user']
             del return_value
 
             assert R_previous_user is original_user, locals()
