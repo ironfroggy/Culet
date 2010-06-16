@@ -1,0 +1,13 @@
+<html>
+    <body>
+    
+    {% for post in posts %}
+        <div>
+            <h1>{{post.title}}</h1>
+            <div>
+                {{post.render_content}}
+            </div>
+        </div>
+    {% endfor %}
+    </body>
+</html>

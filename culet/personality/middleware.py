@@ -11,6 +11,9 @@ class PersonalityMiddleware:
         else:
             
             try:
-                request.user = Personality.objects.get(user_ptr=request.user)
+                if request.user.is_authenticated():
+                    request.user = Personality.objects.get(user_ptr=request.user)
+                else:
+                    request.user.master_user = request.user
             except Personality.DoesNotExist:
                 request.user.master_user = request.user

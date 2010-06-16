@@ -87,4 +87,6 @@ INSTALLED_APPS = (
     'culet.personality',
     'culet.roles',
     'culet.anycontent',
+
+    'testproject.blog',
 )

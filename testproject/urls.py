@@ -16,4 +16,5 @@ urlpatterns = patterns('',
     (r'^admin/', include(admin.site.urls)),
 
     (r'^personality/', include("culet.personality.urls")),
+    (r'^anycontent/', include("culet.anycontent.urls")),
 )
