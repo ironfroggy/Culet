@@ -17,7 +17,7 @@ class Header(models.Model):
 
     def render_content(self):
         from django import template
-        t = template.loader.get_template(self.content.ContentMeta.template)
+        t = template.loader.get_template(_types[self.content_type_name]['template'])
         return t.render(template.Context({
             'header': self,
             'content': self.content,
@@ -46,6 +46,10 @@ class Header(models.Model):
 
 _types = {}
 def register(name, model, template=None, form=None):
+    if template is None:
+        template = model.ContentMeta.template
+    if form is None:
+        form = model.ContentMeta.get_form()
     _types[name] = locals()
 
 class PlainText(models.Model):
