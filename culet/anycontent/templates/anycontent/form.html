@@ -1,12 +1,18 @@
 <html>
 <body>
 
-<form action="." method="POST">
-{% for form in forms %}
-    {{ form.as_ul }}
+{% for posttype in posttypes %}
+    <a href="{% url anycontent-post posttype.content_type_id %}">{{ posttype.name }}</a>
 {% endfor %}
-    <input type="submit" name="submit" value="Save" />
-</form>
+
+{% if forms %}
+    <form action="." method="POST">
+    {% for form in forms %}
+        {{ form.as_ul }}
+    {% endfor %}
+        <input type="submit" name="submit" value="Save" />
+    </form>
+{% endif %}
 
 </body>
 </html>
