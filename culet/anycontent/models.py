@@ -75,4 +75,5 @@ class PlainText(models.Model):
                     model = PlainText
             return TextForm
 
-register("text/plain", PlainText)
+register("plain-text", PlainText)
+register("plain-html", PlainText, template="anycontent/plain-html.html")

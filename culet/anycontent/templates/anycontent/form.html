@@ -2,7 +2,7 @@
 <body>
 
 {% for posttype in posttypes %}
-    <a href="{% url anycontent-post posttype.content_type_id %}">{{ posttype.name }}</a>
+    <a href="{% url anycontent-post posttype.content_type_name %}">{{ posttype.name }}</a>
 {% endfor %}
 
 {% if forms %}

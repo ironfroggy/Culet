@@ -13,17 +13,18 @@ def list(request):
         "anycontent/list.html",
         RequestContext(request, {"posts": all}))
 
-def post(request, content_type=None):
+def post(request, content_type_name=None):
 
-    if content_type is None:
+    if content_type_name is None:
         forms = []
     else:
-        forms = AnyContentForm(request, content_type) 
+        forms = AnyContentForm(request, content_type_name)
 
     posttypes = [
         {
             'name': t['name'],
             'content_type_id': ContentType.objects.get_for_model(t['model']).id,
+            'content_type_name': t['name'],
         }
         for t in _types.values()
     ]
