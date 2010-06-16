@@ -16,7 +16,12 @@ class Header(models.Model):
     content = generic.GenericForeignKey('content_type', 'content_id')
 
     def render_content(self):
-        return self.content.body
+        from django import template
+        t = template.loader.get_template(self.content.ContentMeta.template)
+        return t.render(template.Context({
+            'header': self,
+            'content': self.content,
+        }))
 
     def get_form(self):
         register_meta = _types[self.content_type_name]
