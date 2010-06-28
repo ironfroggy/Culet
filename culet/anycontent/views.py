@@ -13,6 +13,18 @@ def list(request):
         "anycontent/list.html",
         RequestContext(request, {"posts": all}))
 
+def read(request, slug):
+    header = Header.objects.get(slug=slug)
+    content = header.content
+
+    return render_to_response(
+        "anycontent/read.html",
+        RequestContext(request, {
+            "header": header,
+            "content": content,
+        })
+    )
+
 def post(request, content_type_name=None):
 
     if content_type_name is None:

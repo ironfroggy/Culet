@@ -3,7 +3,7 @@
     
     {% for post in posts %}
         <div>
-            <h1>{{post.title}}</h1>
+            <h1><a href="{% url anycontent-read post.slug %}">{{post.title}}</a></h1>
             <div>
                 {{post.render_content}}
             </div>
