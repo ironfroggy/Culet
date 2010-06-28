@@ -17,14 +17,14 @@ class Header(models.Model):
 
     def render_content(self):
         from django import template
-        t = template.loader.get_template(_types[self.content_type_name]['template'])
+        t = template.loader.get_template(content_classes[self.content_type_name]['template'])
         return t.render(template.Context({
             'header': self,
             'content': self.content,
         }))
 
     def get_form(self):
-        register_meta = _types[self.content_type_name]
+        register_meta = content_classes[self.content_type_name]
         if register_meta['form'] is not None:
             form_class = register_meta['form']
         else:
@@ -44,13 +44,26 @@ class Header(models.Model):
     class Meta:
         ordering = ['-created']
 
-_types = {}
-def register(name, model, template=None, form=None):
-    if template is None:
-        template = model.ContentMeta.template
-    if form is None:
-        form = model.ContentMeta.get_form()
-    _types[name] = locals()
+class _ContentClasses(object):
+    def __init__(self):
+        self._types = {}
+
+    def register(self, name, model, template=None, form=None):
+        """Register a content class and optionally bind it with a display template
+        and/or form.
+        """
+
+        if template is None:
+            template = model.ContentMeta.template
+        if form is None:
+            form = model.ContentMeta.get_form()
+        self._types[name] = locals()
+
+    def __getitem__(self, name):
+        return self._types[name]
+    def __iter__(self):
+        return iter(self._types.values())
+content_classes = _ContentClasses()
 
 class PlainText(models.Model):
 
@@ -75,5 +88,5 @@ class PlainText(models.Model):
                     model = PlainText
             return TextForm
 
-register("plain-text", PlainText)
-register("plain-html", PlainText, template="anycontent/plain-html.html")
+content_classes.register("plain-text", PlainText)
+content_classes.register("plain-html", PlainText, template="anycontent/plain-html.html")

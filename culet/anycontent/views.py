@@ -2,7 +2,7 @@ from django.template import RequestContext
 from django.shortcuts import render_to_response
 from django.contrib.contenttypes.models import ContentType
 
-from culet.anycontent.models import Header, _types
+from culet.anycontent.models import Header, content_classes
 from culet.anycontent.forms import AnyContentForm
 
 def list(request):
@@ -38,7 +38,7 @@ def post(request, content_type_name=None):
             'content_type_id': ContentType.objects.get_for_model(t['model']).id,
             'content_type_name': t['name'],
         }
-        for t in _types.values()
+        for t in content_classes
     ]
 
     return render_to_response(
