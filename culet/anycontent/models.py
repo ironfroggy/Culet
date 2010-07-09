@@ -5,7 +5,7 @@ from django.contrib.contenttypes import generic
 class Header(models.Model):
 
     title = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
     
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
