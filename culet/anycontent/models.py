@@ -5,7 +5,6 @@ from django.contrib.contenttypes import generic
 class Header(models.Model):
 
     title = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=100, unique=True)
     
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
@@ -43,6 +42,29 @@ class Header(models.Model):
 
     class Meta:
         ordering = ['-created']
+
+class Stream(models.Model):
+
+    title = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+
+    entries = models.ManyToManyField(Header, through='Entry')
+
+class Entry(models.Model):
+
+    header = models.ForeignKey(Header)
+    stream = models.ForeignKey(Stream)
+    slug = models.SlugField()
+
+    def save(self, *args, **kwargs):
+        if self.slug is None:
+            self.slug = slugify(self.header.title)
+        super(Entry, self).save(*args, **kwargs)
+
+    class Meta:
+        unique_together = (
+            ('stream', 'slug'),
+        )
 
 class _ContentClasses(object):
     def __init__(self):
