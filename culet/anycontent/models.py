@@ -53,7 +53,7 @@ class Stream(models.Model):
     def get_entries(self):
         entries = self.entries.all()
         posts = entries.values_list('header')
-        for (entry, post) for zip(entries, posts):
+        for (entry, post) in zip(entries, posts):
             post.slug = entry.slug
         return posts
 
