@@ -1,0 +1,11 @@
+<html>
+<body>
+<ul>
+<li>Master User: <a href="{% url personality-become master_user.username %}">{{ master_user.username }}</a></li>
+<li>Current: {{ current_user.username }}</li>
+{% for personality in personalities %}
+    <li><a href="{% url personality-become personality.username %}">{{ personality.username }}</a></li>
+{% endfor %}
+</ul>
+</body>
+</html>
