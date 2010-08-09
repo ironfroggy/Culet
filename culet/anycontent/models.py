@@ -50,6 +50,13 @@ class Stream(models.Model):
 
     entries = models.ManyToManyField(Header, through='Entry')
 
+    def get_entries(self):
+        entries = self.entries.all()
+        posts = entries.values_list('header')
+        for (entry, post) for zip(entries, posts):
+            post.slug = entry.slug
+        return posts
+
 class Entry(models.Model):
 
     header = models.ForeignKey(Header)
